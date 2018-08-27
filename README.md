@@ -18,7 +18,7 @@ To run the processing script, make sure you have python installed on your comput
 
 4. Install the required packages: 
 
-  `$ pip install -r requirements.txt'
+  `$ pip install -r requirements.txt`
   
 5. run script from terminal: 
 
