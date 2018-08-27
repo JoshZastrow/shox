@@ -5,6 +5,7 @@ data/tmp/
 # Workflow settings
 .vscode
 .ipynb_checkpoints
+shoxENV/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
