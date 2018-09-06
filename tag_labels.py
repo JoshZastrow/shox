@@ -5,6 +5,24 @@ import json
 from pandas import ExcelWriter
 from utils import query_yes_no
 import argparse
+import ast
+
+def unpack_data_column(data):
+    """
+    Processing script that takes a "Data" column, where
+    the values are in the form of a dictionary, and unpacks
+    them so the result is a standard dataframe with all fields
+    in their own column.
+    """
+    d = []
+    for col, row in data.iterrows():
+        fields = ast.literal_eval(row['Data'])
+        fields['ImageURL'] = row['imageURL']
+        fields['Retailer'] = row['Retailer']
+        d.append(fields)
+    
+    return pd.DataFrame(d)
+
 
 def get_tags():
     """
