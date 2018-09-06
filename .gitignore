@@ -1,6 +1,6 @@
 # Data files
 crawl.xlsx
-data/tmp/
+data/
 
 # Workflow settings
 .vscode
