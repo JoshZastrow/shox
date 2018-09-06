@@ -90,6 +90,7 @@ def add_tags(data):
     assert 'Product Name' in data.columns, 'Column: Product Name not found in csv'
     data['tag'] = data.apply(lambda x: label(x['Product Name'], tags), axis=1)
     data['mvp'] = data.apply(lambda x: mvp.get(x['tag'], np.nan), axis=1)
+    data['image'] = data.ImageURL.apply(lambda x: '=IMAGE("{}")'.format(x))
     data['timestamp'] = pd.datetime.now()
 
     return data
@@ -178,12 +179,15 @@ if __name__ == "__main__":
     file = args.filename
     assert os.path.isfile(file), 'Error: cannot find file. Make sure file is spelled correctly and is located in current directory'
 
-    data = pd.read_csv(file, encoding='latin1')
+    # Processing Steps. Scraper file has no headers FYI
+    column_names = ['imageURL', 'Data', 'Retailer']
+    data = pd.read_csv(file, encoding='latin1', header=None, names=column_names)
+    data = unpack_data_column(data)
     data = add_tags(data)
 
-    # Are we in the data folder? Create one if it doesn't exist
     print('Checking for a data folder, files will be stored there..')
 
+    # Are we in the data folder? Create one if it doesn't exist
     curr_dir = os.getcwd().split('\\')[-1]
     if curr_dir != 'data':
         if not os.path.isdir('data'):
