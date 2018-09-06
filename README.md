@@ -14,7 +14,7 @@ To run the processing script, make sure you have python installed on your comput
 
   `$ cd ~/documents/<your-directory-path>`
   
-3. Optional Steps: create a virtual environment (see below)
+3. **Optional but Recommended Steps**: create a virtual environment (see below)
 
 4. Install the required packages: 
 
@@ -22,7 +22,7 @@ To run the processing script, make sure you have python installed on your comput
   
 5. run script from terminal: 
 
-  `$ python tag_labels.py DEMO_ZALORA_DRESS.csv`
+  `$ python tag_labels.py zalora_demo.csv`
 
 This will output the processed data to `data/processed/DEMO_ZAORA_DRESS.csv`. You can replace the file name with any other csv file, just make sure the file is located in your current working directory. run `$ python tag_labels.py --help` for more information.
 
