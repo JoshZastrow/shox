@@ -7,6 +7,7 @@ from utils import query_yes_no
 import argparse
 import ast
 
+
 def unpack_data_column(data):
     """
     Processing script that takes a "Data" column, where
@@ -19,8 +20,9 @@ def unpack_data_column(data):
         fields = ast.literal_eval(row['Data'])
         fields['ImageURL'] = row['imageURL']
         fields['Retailer'] = row['Retailer']
+        fields['Data'] = row['Data']
         d.append(fields)
-    
+
     return pd.DataFrame(d)
 
 
@@ -34,8 +36,9 @@ def get_tags():
     else:
         file = 'data/meta/tags.csv'
 
-    assert os.path.isfile(file), 'Cannot find tag file. Tag file should be in ~/data/meta/tags.csv'
-    return set(pd.read_csv(file ,header=None, names=['tag'])['tag'].str.lower())
+    assert os.path.isfile(
+        file), 'Cannot find tag file. Tag file should be in ~/data/meta/tags.csv'
+    return set(pd.read_csv(file, header=None, names=['tag'])['tag'].str.lower())
 
 
 def get_mvpTags():
@@ -52,6 +55,7 @@ def get_mvpTags():
         mvp = json.load(fp)
 
     return mvp
+
 
 def label(x, tags):
     """
@@ -101,37 +105,48 @@ def write_data(data, filename):
     Writes a pandas dataframe to a designated CSV file in a 'processed' folder.
     If the file already exists, the data is added to the file.
     """
-    fpath = 'processed'
-    if not os.path.isdir(fpath):
-       os.makedirs(fpath)
+    data_COM = data.loc[:, ['ImageURL', 'Data', 'tag']]
+    data_HUM = data.loc[:, ~['Data']]
 
-    filename = '{}/{}'.format(fpath, filename)
+    fpath_COM = 'C019_processed'
+    fpath_HUM = 'C019_to_review'
 
-    if not os.path.isfile(filename):
-        data.to_csv(filename, index=False)
+    for data, fpath in zip([data_COM, data_HUM], [fpath_COM, fpath_HUM]):
+        print('\nWriting processed data to {}...\n'.format(fpath))
 
-    else:
-        overwrite = query_yes_no('Data already processed. Overwrite existing file?')
+        if not os.path.isdir(fpath):
+            os.makedirs(fpath)
 
-        if overwrite:
-            print('overwriting file {}'.format(filename))
+        filename = '{}/{}'.format(fpath, filename)
+
+        if not os.path.isfile(filename):
             data.to_csv(filename, index=False)
 
         else:
-            append = query_yes_no('Add data to existing processed file?')
-            if append:
-                # Check for matching columns
-                curr_cols = pd.read_csv(filename, nrows=1).columns
-                same_length = len(data.columns) == len(curr_cols)
-                assert (same_length), 'Number of columns of processed data do not match database'
+            overwrite = query_yes_no(
+                'Data already processed. Overwrite existing file?')
 
-                same_column = (data.columns == curr_cols).all()
-                assert same_column, 'Column names of processed data do not match database'
+            if overwrite:
+                print('overwriting file {}'.format(filename))
+                data.to_csv(filename, index=False)
 
-                print('Adding data to file {}'.format(filename))
-                data.to_csv(filename, mode='a', index_label='Index')
             else:
-                print('Please modify name of existing processed file {} and re-run the program.'.format(filename.split('/')[-1]))
+                append = query_yes_no('Add data to existing processed file?')
+                if append:
+                    # Check for matching columns
+                    curr_cols = pd.read_csv(filename, nrows=1).columns
+                    same_length = len(data.columns) == len(curr_cols)
+                    assert (
+                        same_length), 'Number of columns of processed data do not match database'
+
+                    same_column = (data.columns == curr_cols).all()
+                    assert same_column, 'Column names of processed data do not match database'
+
+                    print('Adding data to file {}'.format(filename))
+                    data.to_csv(filename, mode='a', index_label='Index')
+                else:
+                    print('Please modify name of existing processed file {} and re-run the program.'.format(
+                        filename.split('/')[-1]))
 
 
 def check_data(filename, reference_file=None):
@@ -147,7 +162,7 @@ def check_data(filename, reference_file=None):
         'rowCount': total_rows,
         'Labeled': total_rows - not_tagged,
         'Missed': not_tagged
-        }
+    }
 
     # if there are already metrics, retrieve them then add
     if os.path.isfile('data/3_monitor/data.xlsx'):
@@ -162,22 +177,26 @@ def check_data(filename, reference_file=None):
         pass
 
     # write to data sheet
-    if not os.path.isdir('monitor'): os.makedirs('monitor')
+    if not os.path.isdir('monitor'):
+        os.makedirs('monitor')
     writer = ExcelWriter('monitor/data.xlsx', 'data')
-    report.to_excel(writer,'data')
+    report.to_excel(writer, 'data')
     writer.save()
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Process Scraping date: Adding timestamp and product tags.')
-    parser.add_argument('filename', metavar='file name', type=str,
+    parser = argparse.ArgumentParser(
+        description='Process Scraping date: Adding timestamp and product tags.')
+    parser.add_argument('filename', metavar='file', type=str,
                         help='The file name of the scraper file (i.e 2018-08-24_zalora.csv)')
 
     args = parser.parse_args()
 
     file = args.filename
-    assert os.path.isfile(file), 'Error: cannot find file. Make sure file is spelled correctly and is located in current directory'
+
+    assert os.path.isfile(
+        file), 'Error: cannot find file. Make sure file is spelled correctly and is located in current directory'
 
     # Processing Steps. Scraper file has no headers FYI
     column_names = ['imageURL', 'Data', 'Retailer']
@@ -194,5 +213,5 @@ if __name__ == "__main__":
             os.path.makedirs('data')
         os.chdir('data')
 
-    write_data(data, file)
+    write_data(data, file, form)
     # #check_data(file)
